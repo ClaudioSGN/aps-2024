@@ -1,70 +1,79 @@
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import json
+import pandas as pd #Importa a biblioteca pandas para manipulação de dados
+from sklearn.feature_extraction.text import TfidfVectorizer #Importa o vetorizador TF-IDF para converter texto em um vetor numérico
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis #Importa o classificador Análise Discriminante Quadrática
+from sklearn.model_selection import train_test_split #Importa função para dividir dados em conjuntos de treino e teste
+from sklearn.metrics import accuracy_score #Importa função para calcular a acurácia de previsões
+import json #Importa a biblioteca para manipulação de arquivos JSON
 
-# Load the dataset from JSON
+#Define função para carregar dados de um arquivo JSON
 def load_dataset(filename):
-    with open(filename, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-        df = pd.DataFrame(data)
-        if 'label' in df:
-            df['label'] = df['label'].apply(lambda x: 0 if x == 'good' else 1 if x == 'bad' else 2)
-        return df
+    with open(filename, 'r', encoding='utf-8') as file: #Abre o arquivo JSON para leitura
+        data = json.load(file) #Carrega os dados JSON
+        df = pd.DataFrame(data) #Converte os dados em um DataFrame do pandas
+        if 'label' in df: #Verifica se a coluna 'label' existe no DataFrame
+            df['label'] = df['label'].apply(lambda x: 0 if x == 'good' else 1 if x == 'bad' else 2) #Codifica rótulos como números
+        return df #Retorna o DataFrame processado
 
-# Main function to preprocess, train, and evaluate
+#Define função principal para preprocessamento e treinamento
 def train_and_evaluate(train_file):
-    df_train = load_dataset(train_file)
-    print("Label distribution:\n", df_train['label'].value_counts())
+    df_train = load_dataset(train_file) #Carrega os dados de treinamento
+    print("Label distribution:\n", df_train['label'].value_counts()) #Exibe a distribuição das classes
 
-    if len(df_train['label'].unique()) < 2:
-        print("Not enough classes to train a model. Please check the dataset.")
+    if len(df_train['label'].unique()) < 2: #Checa se há pelo menos duas classes
+        print("Not enough classes to train a model. Please check the dataset.") #Mensagem de erro se não houver classes suficientes
         return
 
-    df_train['text'] = df_train['title'] + " " + df_train.get('introducao', '')
-    X_train, X_test, y_train, y_test = train_test_split(df_train['text'], df_train['label'], test_size=0.2, random_state=42, stratify=df_train['label'])
+    df_train['text'] = df_train['title'] + " " + df_train.get('introducao', '') #Combina títulos com introduções para formar o texto
+    X_train, X_test, y_train, y_test = train_test_split(df_train['text'], df_train['label'], test_size=0.2, random_state=42, stratify=df_train['label']) #Divide os dados em conjuntos de treino e teste
 
-    vectorizer = TfidfVectorizer()
-    X_train_transformed = vectorizer.fit_transform(X_train)
-    X_test_transformed = vectorizer.transform(X_test)
+    vectorizer = TfidfVectorizer() #Instancia o vetorizador TF-IDF
+    X_train_transformed = vectorizer.fit_transform(X_train) #Transforma e ajusta o vetorizador ao conjunto de treino
+    X_test_transformed = vectorizer.transform(X_test) #Transforma o conjunto de teste
 
-    qda = QuadraticDiscriminantAnalysis()
-    qda.fit(X_train_transformed.toarray(), y_train)
+    qda = QuadraticDiscriminantAnalysis() #Instancia o classificador QDA
+    qda.fit(X_train_transformed.toarray(), y_train) #Treina o classificador no conjunto de treino
 
-    predictions = qda.predict(X_test_transformed.toarray())
-    accuracy = accuracy_score(y_test, predictions)
+    predictions = qda.predict(X_test_transformed.toarray()) #Faz previsões no conjunto de teste
+    accuracy = accuracy_score(y_test, predictions) #Calcula a acurácia das previsões
 
-    return qda, vectorizer
+    return qda, vectorizer #Retorna o modelo treinado e o vetorizador
 
-# Function to load new data and predict, saving percentages to JSON
+#Define função para predição em novos dados
 def predict_new_data(model, vectorizer, new_data_file):
-    df_new = load_dataset(new_data_file)
-    df_new['text'] = df_new['title'] + " " + df_new.get('introducao', '')
-    X_new_transformed = vectorizer.transform(df_new['text'])
-    predictions = model.predict(X_new_transformed.toarray())
-    df_new['predicted_label'] = ['good' if label == 0 else 'bad' for label in predictions]
+    df_new = load_dataset(new_data_file) #Carrega novos dados
+    df_new['text'] = df_new['title'] + " " + df_new.get('introducao', '') #Prepara o texto
+    X_new_transformed = vectorizer.transform(df_new['text']) #Transforma o texto
+    predictions = model.predict(X_new_transformed.toarray()) #Faz previsões
+    df_new['predicted_label'] = ['good' if label == 0 else 'bad' for label in predictions] #Decodifica previsões para 'good(bom)' ou 'bad(ruim)'
 
-    # Calculate percentages
+    #Calcula e salva as porcentagens de notícias boas e ruins
     good_count = sum(df_new['predicted_label'] == 'good')
     bad_count = sum(df_new['predicted_label'] == 'bad')
     total = len(df_new)
     percentages = {
-        "Good News Percentage": f"{good_count / total * 100:.2f}%",
-        "Bad News Percentage": f"{bad_count / total * 100:.2f}%"
+        "Noticias Boas": f"{good_count / total * 100:.2f}%",
+        "Noticias Ruins": f"{bad_count / total * 100:.2f}%"
     }
-
-    # Save to JSON
     with open('results.json', 'w', encoding='utf-8') as file:
         json.dump(percentages, file, ensure_ascii=False, indent=4)
 
-# Paths to the datasets
-train_data_file = 'news_data_train.json'  # Path to the training data
-new_data_file = 'news_data.json'  # Path to the new, unlabeled data
+#Define os caminhos dos arquivos de dados
+train_data_file = 'news_data_train.json' #Arquivo de treino
+new_data_file = 'news_data.json' #Arquivo de novos dados
 
-# Train the model and get the vectorizer
+#Treina o modelo e obtém o vetorizador
 model, vectorizer = train_and_evaluate(train_data_file)
 
-# Predict on new data and save percentages to JSON
+#Prediz e salva as porcentagens de novas notícias
 predict_new_data(model, vectorizer, new_data_file)
+
+
+#Este código faz a classificação automática de notícias como "boas" ou "ruins"
+#usando machine learning. Utilizando a biblioteca 'pandas' para lidar com os dados,
+#a biblioteca, 'TfidfVectorizer' para transformar os textos em vetores numéricos e
+# o modelo 'QDA' para fazer a classificação. Já a função 'load_dataset' carrega e organiza
+#os dados de um arquivo JSON em um DataFrame, convertendo rótulos em números.
+#A 'train_and_evaluate' treina o modelo com esses dados, aplica TF-IDF e 
+#verifica a precisão. A função 'predict_new_data' utiliza o modelo para classificar novas
+#notícias e calcula a porcentagem de notícias "boas" e "ruins", salvando tudo em um JSON.
+#Este código automatiza a coleta e análise de notícias, tornando fácil acompanhar tendências de conteúdo.

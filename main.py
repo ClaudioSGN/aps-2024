@@ -1,16 +1,19 @@
 import os
 
-# Ensure that all scripts are in the same directory as the main script or adjust the path accordingly.
-
 def run_script(script_name):
     os.system(f"python {script_name}")
 
 if __name__ == "__main__":
-    # Run noticias.py
+    # Rodar noticias.py
     run_script("noticias.py")
 
-    # Run ai_analyzer.py
+    # Rodar ai_analyzer.py
     run_script("ai_analyzer.py")
 
-    # Run testgraphic.py
+    # Rodar testgraphic.py
     run_script("testgraphic.py")
+
+
+#Este código é responsável apenas pela utilização correta do todo.
+#Utilizando apenas este é possível rodar todo o código pois ele
+#"automatiza" os códigos abrindo um por um em sua ordem.
