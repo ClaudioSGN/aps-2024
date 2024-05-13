@@ -1,4 +1,4 @@
-O arquivo noticias.py é responsável por realizar o webscraping das notícias nos sites: G1, BBC e CNN. Após serem puxadas, o código também gera um arquivo em .JSON que posteriormente é lido pelo arquivo ai_analyzer.py.
+O arquivo noticias.py é responsável por realizar o webscraping das notícias nos sites: G1, BBC, CNN e Exame. Após serem puxadas, o código também gera um arquivo em .JSON que posteriormente é lido pelo arquivo ai_analyzer.py.
 
 O arquivo ai_analyzer.py é responsável por treinar a "I.A." utilizando a biblioteca Sklearn e utilizando um arquivo de notícias ficticias utilizadas apenas para o treinamento da I.A., após o treinamento a I.A. lê o arquivo .JSON que foi gerado no arquivo noticias.py, 
 classifica a notícia lida como boa ou ruim e gera um arquivo em .JSON com a porcentagem de notícias ruins e notícias boas que foram lidas.
