@@ -16,4 +16,4 @@ if __name__ == "__main__":
 
 #Este código é responsável apenas pela utilização correta do todo.
 #Utilizando apenas este é possível rodar todo o código pois ele
-#"automatiza" os códigos abrindo um por um em sua ordem.
+#"automatiza" os códigos abrindo um por um em sua determinada ordem.
