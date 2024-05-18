@@ -4,13 +4,13 @@ def run_script(script_name):
     os.system(f"python {script_name}")
 
 if __name__ == "__main__":
-    # Rodar noticias.py
+    #Rodar noticias.py
     run_script("noticias.py")
 
-    # Rodar ai_analyzer.py
+    #Rodar ai_analyzer.py/
     run_script("ai_analyzer.py")
 
-    # Rodar testgraphic.py
+    #Rodar testgraphic.py
     run_script("testgraphic.py")
 
 
